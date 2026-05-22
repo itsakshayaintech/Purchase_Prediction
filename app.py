@@ -1,58 +1,87 @@
-from flask import Flask, request, render_template
+from flask import Flask, render_template, request
 import numpy as np
-import joblib
-
-# Load model and scaler
-model = joblib.load('model_all_features.pkl')
-scaler = joblib.load('scaler_all_features.pkl')
+import pickle
+import webbrowser
 
 app = Flask(__name__)
 
-@app.route('/')
+# LOAD MODEL
+model = pickle.load(open("model.pkl", "rb"))
+
+# ENCODING MAPS
+income_map = {
+    "Low": 0,
+    "Medium": 1,
+    "High": 2
+}
+
+satisfaction_map = {
+    "Low": 0,
+    "Medium": 1,
+    "High": 2
+}
+
+ads_map = {
+    "Low": 0,
+    "Medium": 1,
+    "High": 2
+}
+
+@app.route("/")
 def home():
-    return render_template('index.html')
 
-@app.route('/predict', methods=['POST'])
+    return render_template("index.html")
+
+@app.route("/predict", methods=["POST"])
 def predict():
-    try:
-        # Get input
-        gender = request.form['gender']
-        age = float(request.form['age'])
-        salary = float(request.form['salary'])
 
-        # Encode gender
-        gender_val = 1 if gender == "Male" else 0
+    age = int(request.form["age"])
 
-        # Prepare input
-        input_data = np.array([[gender_val, age, salary]])
+    income = income_map[request.form["income"]]
 
-        # Scale input
-        input_scaled = scaler.transform(input_data)
+    rating = float(request.form["rating"])
 
-        # Prediction
-        prediction = model.predict(input_scaled)[0]
+    satisfaction = satisfaction_map[request.form["satisfaction"]]
 
-        # Probability
-        probability = model.predict_proba(input_scaled)[0][1] * 100
+    ads = ads_map[request.form["ads"]]
 
-        # Result
-        if prediction == 1:
-            result = "User will BUY the product"
-        else:
-            result = "User will NOT buy the product"
+    decision = float(request.form["decision"])
 
-        return render_template(
-            'index.html',
-            prediction_text=result,
-            probability=round(probability, 2)
-        )
+    features = np.array([[
+        age,
+        income,
+        rating,
+        satisfaction,
+        ads,
+        decision
+    ]])
 
-    except Exception as e:
-        return str(e)
+    prediction = model.predict(features)[0]
+
+    probability = round(np.max(model.predict_proba(features)) * 100, 2)
+
+    if prediction == 1:
+        prediction_text = "Customer Will Purchase"
+    else:
+        prediction_text = "Customer Will Not Purchase"
+
+    probs = list(model.predict_proba(features)[0] * 100)
+
+    class_names = [
+        "Not Purchase",
+        "Purchase"
+    ]
+
+    return render_template(
+        "index.html",
+        prediction_text=prediction_text,
+        probability=probability,
+        probs=probs,
+        class_names=class_names
+    )
 
 if __name__ == "__main__":
-    app.run(debug=True)
+
     
-    
-    
-    
+
+    app.run(debug=True, use_reloader=False)

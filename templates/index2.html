@@ -60,7 +60,7 @@ body::after{
 }
 
 .container{
-    max-width:1350px;
+    max-width:1300px;
     margin:auto;
 }
 
@@ -82,17 +82,14 @@ header p{
     margin-top:10px;
 }
 
-/* TOP GRID */
-
-.top-grid{
+.main-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:25px;
-    align-items:start;
 }
 
-@media(max-width:950px){
-    .top-grid{
+@media(max-width:900px){
+    .main-grid{
         grid-template-columns:1fr;
     }
 }
@@ -104,7 +101,7 @@ header p{
     padding:25px;
 }
 
-/* TITLES */
+/* INPUT */
 
 .section-title{
     margin-bottom:20px;
@@ -119,8 +116,6 @@ header p{
     color:var(--muted);
     font-size:14px;
 }
-
-/* INPUT */
 
 .field-group{
     margin-bottom:18px;
@@ -182,35 +177,33 @@ button:hover{
     transform:translateY(-2px);
 }
 
-/* PREDICTION */
+/* OUTPUT */
 
 .output-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:20px;
+    gap:18px;
 }
 
 .result-box{
     background:var(--card2);
     border-radius:16px;
-    padding:22px;
+    padding:18px;
     border:1px solid var(--border);
-    min-height:180px;
+}
+
+.result-box h3{
+    font-size:16px;
+    margin-bottom:12px;
 }
 
 .big-result{
     grid-column:1 / -1;
 }
 
-.result-box h3{
-    font-size:16px;
-    margin-bottom:14px;
-}
-
 .prediction{
-    font-size:28px;
+    font-size:26px;
     font-weight:700;
-    margin-top:10px;
 }
 
 .buy{
@@ -222,51 +215,13 @@ button:hover{
 }
 
 .confidence{
-    font-size:28px;
+    font-size:22px;
     color:#A78BFA;
     font-weight:700;
 }
 
-/* GRAPH SECTION */
-
-.graph-section{
-    margin-top:30px;
-}
-
-.graph-card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:25px;
-}
-
-.graph-grid{
-    display:grid;
-    grid-template-columns:1.2fr 1fr 1fr;
-    gap:20px;
-    align-items:start;
-}
-
-@media(max-width:1000px){
-    .graph-grid{
-        grid-template-columns:1fr;
-    }
-}
-
-.graph-box{
-    background:var(--card2);
-    border-radius:16px;
-    padding:20px;
-    border:1px solid var(--border);
-    min-height:350px;
-}
-
-.graph-box h3{
-    margin-bottom:18px;
-}
-
 .chart-container{
-    height:260px;
+    height:250px;
 }
 
 img{
@@ -276,13 +231,12 @@ img{
 
 .empty{
     text-align:center;
-    padding:60px 20px;
+    padding:50px 20px;
     color:var(--muted);
 }
 
 .empty h2{
     margin-bottom:10px;
-    color:white;
 }
 
 </style>
@@ -293,25 +247,24 @@ img{
 <div class="container">
 
 <header>
-    <h1>🛍️ Customer Purchase Prediction</h1>
+    <h1>Customer Purchase Prediction</h1>
     <p>Predict customer purchase behavior using Machine Learning</p>
 </header>
 
-<!-- TOP SECTION -->
-<div class="top-grid">
+<div class="main-grid">
 
-    <!-- LEFT INPUT -->
+    <!-- LEFT SIDE INPUT -->
     <div class="card">
 
         <div class="section-title">
-            <h2>📝 Customer Details</h2>
+            <h2>Customer Details</h2>
             <p>Enter all customer information carefully</p>
         </div>
 
         <form action="/predict" method="POST">
 
             <!-- DEMOGRAPHICS -->
-            <div class="section-divider">👤 Demographics</div>
+            <div class="section-divider">Demographics</div>
 
             <div class="field-group field-row">
 
@@ -332,7 +285,7 @@ img{
             </div>
 
             <!-- PRODUCT -->
-            <div class="section-divider">⭐ Product Information</div>
+            <div class="section-divider">Product Information</div>
 
             <div class="field-group field-row">
 
@@ -353,7 +306,7 @@ img{
             </div>
 
             <!-- ADS -->
-            <div class="section-divider">📢 Advertisement Analysis</div>
+            <div class="section-divider">Advertisement Analysis</div>
 
             <div class="field-group field-row">
 
@@ -367,32 +320,25 @@ img{
                 </div>
 
                 <div>
-                    <label>Time to Decision (Hours)</label>
-                    <input 
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        name="decision"
-                        placeholder="Enter time in hours"
-                        required
-                    >
+                    <label>Time to Decision</label>
+                    <input type="number" step="0.1" name="decision" required>
                 </div>
 
             </div>
 
             <button type="submit">
-                🚀 Predict Purchase Behavior
+                Predict Purchase Behavior
             </button>
 
         </form>
 
     </div>
 
-    <!-- RIGHT OUTPUT -->
+    <!-- RIGHT SIDE OUTPUT -->
     <div class="card">
 
         <div class="section-title">
-            <h2>📊 Prediction Results</h2>
+            <h2>Prediction Results</h2>
             <p>Machine Learning output and analytics</p>
         </div>
 
@@ -402,10 +348,9 @@ img{
 
             <!-- Prediction -->
             <div class="result-box big-result">
+                <h3>Prediction Result</h3>
 
-                <h3>🧠 Prediction Result</h3>
-
-                <div class="prediction
+                <div class="prediction 
                 {% if 'Will Purchase' in prediction_text %}
                     buy
                 {% else %}
@@ -414,29 +359,41 @@ img{
                 ">
                     {{ prediction_text }}
                 </div>
-
             </div>
 
             <!-- Confidence -->
             <div class="result-box">
-
-                <h3>📈 Confidence Score</h3>
-
-                <div class="confidence">
-                    {{ probability }}%
-                </div>
-
+                <h3>Confidence</h3>
+                <div class="confidence">{{ probability }}%</div>
             </div>
 
             <!-- Classes -->
             <div class="result-box">
+                <h3>Total Classes</h3>
+                <div class="confidence">{{ class_names|length }}</div>
+            </div>
 
-                <h3>📂 Total Classes</h3>
+            <!-- Probability Chart -->
+            <div class="result-box big-result">
+                <h3>Probability Distribution</h3>
 
-                <div class="confidence">
-                    {{ class_names|length }}
+                <div class="chart-container">
+                    <canvas id="chart"></canvas>
                 </div>
+            </div>
 
+            <!-- Feature Importance -->
+            <div class="result-box">
+                <h3>Feature Importance</h3>
+
+                <img src="{{ url_for('static', filename='feature_importance.png') }}">
+            </div>
+
+            <!-- Class Distribution -->
+            <div class="result-box">
+                <h3>Class Distribution</h3>
+
+                <img src="{{ url_for('static', filename='class_distribution.png') }}">
             </div>
 
         </div>
@@ -444,7 +401,7 @@ img{
         {% else %}
 
         <div class="empty">
-            <h2>🧠 No Prediction Yet</h2>
+            <h2>No Prediction Yet</h2>
             <p>Enter customer details and click Predict</p>
         </div>
 
@@ -453,57 +410,6 @@ img{
     </div>
 
 </div>
-
-<!-- BOTTOM GRAPH SECTION -->
-{% if prediction_text %}
-
-<div class="graph-section">
-
-    <div class="graph-card">
-
-        <div class="section-title">
-            <h2>📊 Visual Analytics</h2>
-            <p>Graphs and feature analysis generated by the ML model</p>
-        </div>
-
-        <div class="graph-grid">
-
-            <!-- Probability Chart -->
-            <div class="graph-box">
-
-                <h3>📉 Probability Distribution</h3>
-
-                <div class="chart-container">
-                    <canvas id="chart"></canvas>
-                </div>
-
-            </div>
-
-            <!-- Feature Importance -->
-            <div class="graph-box">
-
-                <h3>🔥 Feature Importance</h3>
-
-                <img src="{{ url_for('static', filename='feature_importance.png') }}">
-
-            </div>
-
-            <!-- Class Distribution -->
-            <div class="graph-box">
-
-                <h3>📌 Class Distribution</h3>
-
-                <img src="{{ url_for('static', filename='class_distribution.png') }}">
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-{% endif %}
 
 </div>
 
@@ -514,27 +420,21 @@ const ctx = document.getElementById('chart');
 
 new Chart(ctx, {
     type: 'bar',
-
     data: {
         labels: {{ class_names | tojson }},
-
         datasets: [{
             label: 'Probability (%)',
-
             data: {{ probs | tojson }},
-
             backgroundColor: [
                 'rgba(124,58,237,0.8)',
                 'rgba(236,72,153,0.8)',
                 'rgba(16,185,129,0.8)'
             ],
-
             borderRadius: 8
         }]
     },
 
     options: {
-
         responsive:true,
         maintainAspectRatio:false,
 
@@ -545,15 +445,12 @@ new Chart(ctx, {
         },
 
         scales:{
-
             y:{
                 beginAtZero:true,
                 max:100,
-
                 ticks:{
                     color:'#9E97C4'
                 },
-
                 grid:{
                     color:'rgba(255,255,255,0.05)'
                 }
@@ -563,16 +460,12 @@ new Chart(ctx, {
                 ticks:{
                     color:'#9E97C4'
                 },
-
                 grid:{
                     display:false
                 }
             }
-
         }
-
     }
-
 });
 
 </script>

@@ -1,90 +1,230 @@
-# Purchase Prediction Based on Social Network Advertisements
-# Objectives:
-    # #To analyze customer data from social network advertisements
-    # #To preprocess and prepare the dataset for modeling
-    # #To build a machine learning model to predict purchase behavior
-    # #To evaluate the model using standard performance metrics
-    # #To identify key factors influencing customer decisions
-    # #To develop a simple web interface for real-time prediction
-
-# Import libraries
 import pandas as pd
+import numpy as np
+import pickle
+
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
 
+# -----------------------------
+# CREATE DATASET
+# -----------------------------
 
-# Load dataset (use relative path)
-df = pd.read_csv('Social_Network_Ads.csv')
+np.random.seed(42)
 
-# Encode Gender
-le = LabelEncoder()
-df['Gender'] = le.fit_transform(df['Gender'])
+data_size = 1000
 
-# Features and target
-X = df[['Gender', 'Age', 'EstimatedSalary']]
-y = df['Purchased']
+ages = np.random.randint(18, 60, data_size)
 
-# Split
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
+income = np.random.choice(
+    ["Low", "Medium", "High"],
+    data_size,
+    p=[0.3, 0.4, 0.3]
 )
 
-# Scale
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
-X_test_scaled = scaler.transform(X_test) 
+rating = np.round(np.random.uniform(1, 5, data_size), 1)
 
-# Train model
-model = RandomForestClassifier(n_estimators=100, random_state=42)
-model.fit(X_train_scaled, y_train)
+satisfaction = np.random.choice(
+    ["Low", "Medium", "High"],
+    data_size,
+    p=[0.25, 0.35, 0.4]
+)
 
-# Predictions
-y_pred = model.predict(X_test_scaled)  
-y_prob = model.predict_proba(X_test_scaled)[:, 1] 
+ads = np.random.choice(
+    ["Low", "Medium", "High"],
+    data_size,
+    p=[0.3, 0.3, 0.4]
+)
 
-# Evaluation metrics
+decision = np.random.randint(1, 72, data_size)
+
+# -----------------------------
+# TARGET CREATION LOGIC
+# -----------------------------
+
+purchased = []
+
+for i in range(data_size):
+
+    score = 0
+
+    # income
+    if income[i] == "High":
+        score += 2
+    elif income[i] == "Medium":
+        score += 1
+
+    # rating
+    if rating[i] >= 4:
+        score += 2
+    elif rating[i] >= 3:
+        score += 1
+
+    # satisfaction
+    if satisfaction[i] == "High":
+        score += 2
+    elif satisfaction[i] == "Medium":
+        score += 1
+
+    # ads
+    if ads[i] == "High":
+        score += 2
+    elif ads[i] == "Medium":
+        score += 1
+
+    # decision time
+    if decision[i] <= 5:
+        score += 2
+    elif decision[i] <= 24:
+        score += 1
+
+    # age
+    if 20 <= ages[i] <= 35:
+        score += 1
+
+    # final target
+    if score >= 7:
+        purchased.append(1)
+    else:
+        purchased.append(0)
+
+# -----------------------------
+# DATAFRAME
+# -----------------------------
+
+df = pd.DataFrame({
+    "Age": ages,
+    "Income": income,
+    "Rating": rating,
+    "Satisfaction": satisfaction,
+    "Ads": ads,
+    "Decision": decision,
+    "Purchased": purchased
+})
+
+# -----------------------------
+# ENCODING
+# -----------------------------
+
+income_map = {
+    "Low": 0,
+    "Medium": 1,
+    "High": 2
+}
+
+satisfaction_map = {
+    "Low": 0,
+    "Medium": 1,
+    "High": 2
+}
+
+ads_map = {
+    "Low": 0,
+    "Medium": 1,
+    "High": 2
+}
+
+df["Income"] = df["Income"].map(income_map)
+df["Satisfaction"] = df["Satisfaction"].map(satisfaction_map)
+df["Ads"] = df["Ads"].map(ads_map)
+
+# -----------------------------
+# FEATURES & TARGET
+# -----------------------------
+
+X = df.drop("Purchased", axis=1)
+y = df["Purchased"]
+
+# -----------------------------
+# SPLIT
+# -----------------------------
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42,
+    stratify=y
+)
+
+# -----------------------------
+# MODEL
+# -----------------------------
+
+model = RandomForestClassifier(
+    n_estimators=200,
+    random_state=42,
+    class_weight='balanced'
+)
+
+model.fit(X_train, y_train)
+
+# -----------------------------
+# ACCURACY
+# -----------------------------
+
+y_pred = model.predict(X_test)
+
 accuracy = accuracy_score(y_test, y_pred)
-precision = precision_score(y_test, y_pred)
-recall = recall_score(y_test, y_pred)
-f1 = f1_score(y_test, y_pred)
-roc_auc = roc_auc_score(y_test, y_prob)
-cm = confusion_matrix(y_test, y_pred)
 
-# Print results
-print("Accuracy:", accuracy)
-print("Precision:", precision)
-print("Recall:", recall)
-print("F1 Score:", f1)
-print("ROC-AUC:", roc_auc)
-print("Confusion Matrix:\n", cm)
+print("\nModel Accuracy:", round(accuracy * 100, 2), "%")
 
-import matplotlib.pyplot as plt
-from sklearn.metrics import RocCurveDisplay
-import numpy as np
+print("\nClass Distribution:")
+print(df["Purchased"].value_counts())
 
-# ROC Curve
-RocCurveDisplay.from_predictions(y_test, y_prob)
-plt.title("ROC Curve")
-plt.show()
+# -----------------------------
+# SAVE MODEL
+# -----------------------------
 
-# Feature Importance
-features = ['Gender', 'Age', 'EstimatedSalary']
-importances = model.feature_importances_
+pickle.dump(model, open("model.pkl", "wb"))
 
-indices = np.argsort(importances)
+print("\nModel saved successfully!")
 
-plt.figure()
-plt.barh(range(len(indices)), importances[indices])
-plt.yticks(range(len(indices)), [features[i] for i in indices])
+# -----------------------------
+# FEATURE IMPORTANCE GRAPH
+# -----------------------------
+
+importance = model.feature_importances_
+
+feature_names = X.columns
+
+plt.figure(figsize=(8,5))
+
+plt.bar(feature_names, importance)
+
 plt.title("Feature Importance")
-plt.xlabel("Importance")
-plt.show()
 
-import joblib
+plt.xlabel("Features")
 
-joblib.dump(model, 'model_all_features.pkl')
-joblib.dump(scaler, 'scaler_all_features.pkl')
+plt.ylabel("Importance")
 
+plt.tight_layout()
 
+plt.savefig("static/feature_importance.png")
+
+plt.close()
+
+# -----------------------------
+# CLASS DISTRIBUTION GRAPH
+# -----------------------------
+
+counts = df["Purchased"].value_counts()
+
+labels = ["Not Purchase", "Purchase"]
+
+plt.figure(figsize=(6,6))
+
+plt.pie(
+    counts,
+    labels=labels,
+    autopct='%1.1f%%'
+)
+
+plt.title("Class Distribution")
+
+plt.savefig("static/class_distribution.png")
+
+plt.close()
+
+print("\nGraphs generated successfully!")
